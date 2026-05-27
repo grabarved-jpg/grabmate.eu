@@ -17,6 +17,7 @@ type Company = {
   name: string;
   regCode: string;
   address: string;
+  bankAccount?: string;
   status?: string;
 };
 
@@ -233,6 +234,14 @@ function CompanyAutocomplete({
             onChange={(event) => onChange({ ...value, address: event.target.value })}
           />
         </label>
+        {title === "Arve koostaja" && (
+          <Field
+            label="Konto nr / IBAN"
+            value={value.bankAccount ?? ""}
+            placeholder="EE..."
+            onChange={(next) => onChange({ ...value, bankAccount: next })}
+          />
+        )}
       </div>
     </section>
   );
@@ -429,6 +438,7 @@ export default function Home() {
               <p className="text-base font-semibold">{seller.name || "-"}</p>
               <p className="mt-2 text-ink/70">Registrikood: {seller.regCode || "-"}</p>
               <p className="mt-2 whitespace-pre-line text-ink/65">{seller.address || "-"}</p>
+              <p className="mt-2 text-ink/70">Konto nr: {seller.bankAccount || "-"}</p>
             </div>
             <div className="rounded-lg border border-line bg-ink p-5 text-white">
               <h3 className="mb-4 text-xs font-semibold uppercase text-white/55">Arve saaja</h3>
