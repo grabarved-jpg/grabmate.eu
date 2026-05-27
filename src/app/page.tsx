@@ -271,6 +271,7 @@ export default function Home() {
   const [note, setNote] = useState("Täname õigeaegselt tasutud arve eest.");
   const [exportingPdf, setExportingPdf] = useState(false);
   const [sendingEmail, setSendingEmail] = useState(false);
+  const [bccEmail, setBccEmail] = useState("");
   const [emailStatus, setEmailStatus] = useState("");
 
   const totals = useMemo(() => {
@@ -398,6 +399,7 @@ export default function Home() {
         body: JSON.stringify({
           to: buyer.email,
           subject: `Arve ${invoiceNo}`,
+          bcc: bccEmail,
           message: `Tere\n\nManuses on arve ${invoiceNo}.\n\n${note}`,
           filename: `arve-${invoiceNo || "uus"}.pdf`,
           pdfBase64
@@ -527,6 +529,13 @@ export default function Home() {
               onChange={(event) => setNote(event.target.value)}
             />
           </label>
+          <Field
+            label="Pimekoopia e-post"
+            value={bccEmail}
+            placeholder="raamatupidamine@ettevote.ee"
+            type="email"
+            onChange={setBccEmail}
+          />
         </section>
       </aside>
 

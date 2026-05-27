@@ -3,6 +3,7 @@ import { Resend } from "resend";
 
 type SendInvoiceRequest = {
   to?: unknown;
+  bcc?: unknown;
   subject?: unknown;
   message?: unknown;
   filename?: unknown;
@@ -34,6 +35,7 @@ export async function POST(request: Request) {
 
   const body = (await request.json()) as SendInvoiceRequest;
   const to = asString(body.to);
+  const bcc = asString(body.bcc);
   const subject = asString(body.subject) || "Arve";
   const message = asString(body.message) || "Tere, manusena on lisatud arve.";
   const filename = asString(body.filename) || "arve.pdf";
@@ -51,6 +53,7 @@ export async function POST(request: Request) {
   const { error } = await resend.emails.send({
     from,
     to,
+    ...(bcc ? { bcc } : {}),
     subject,
     html: `<p>${escapeHtml(message).replaceAll("\n", "<br />")}</p>`,
     attachments: [
