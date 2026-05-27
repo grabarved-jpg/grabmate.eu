@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  background: #fbfaf7;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  color: #17202a;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(217, 108, 95, 0.10), transparent 28rem),
+    linear-gradient(180deg, rgba(47, 143, 131, 0.10), transparent 360px),
+    #fbfaf7;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+@media print {
+  @page {
+    margin: 14mm;
+    size: A4;
+  }
+
+  body {
+    background: white;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-shell {
+    padding: 0 !important;
+    max-width: none !important;
+  }
+
+  #invoice {
+    border: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+}
