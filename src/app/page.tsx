@@ -334,9 +334,10 @@ export default function Home() {
       const pdf = new jsPDF("p", "mm", "a4");
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
-      const margin = 10;
+      const margin = 8;
       const imageWidth = pageWidth - margin * 2;
-      const imageHeight = (canvas.height * imageWidth) / canvas.width;
+      const naturalImageHeight = (canvas.height * imageWidth) / canvas.width;
+      const imageHeight = rows.length <= 4 ? Math.min(naturalImageHeight, pageHeight - margin * 2) : naturalImageHeight;
       const imageData = canvas.toDataURL("image/png");
 
       let position = margin;
@@ -536,8 +537,8 @@ export default function Home() {
       >
         <div className="h-2 bg-gradient-to-r from-mint via-ink to-coral" />
 
-        <div className="p-6 md:p-10">
-          <div className="flex flex-wrap items-start justify-between gap-6 pb-9">
+        <div className="invoice-body p-6 md:p-10">
+          <div className="invoice-header flex flex-wrap items-start justify-between gap-6 pb-9">
             <div className="max-w-sm">
               <p className="text-xs font-semibold uppercase text-mint">Arve</p>
               <h2 className="mt-3 text-5xl font-bold leading-none text-ink">ARVE</h2>
@@ -555,15 +556,15 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="grid gap-4 text-sm md:grid-cols-2">
-            <div className="rounded-lg border border-line bg-white p-5">
+          <div className="invoice-party-grid grid gap-4 text-sm md:grid-cols-2">
+            <div className="invoice-party-card rounded-lg border border-line bg-white p-5">
               <h3 className="mb-4 text-xs font-semibold uppercase text-ink/45">Arve koostaja</h3>
               <p className="text-base font-semibold">{seller.name || "-"}</p>
               <p className="mt-2 text-ink/70">Registrikood: {seller.regCode || "-"}</p>
               <p className="mt-2 whitespace-pre-line text-ink/65">{seller.address || "-"}</p>
               <p className="mt-2 text-ink/70">Konto nr: {seller.bankAccount || "-"}</p>
             </div>
-            <div className="rounded-lg border border-line bg-ink p-5 text-white">
+            <div className="invoice-party-card rounded-lg border border-line bg-ink p-5 text-white">
               <h3 className="mb-4 text-xs font-semibold uppercase text-white/55">Arve saaja</h3>
               <p className="text-base font-semibold">{buyer.name || "-"}</p>
               <p className="mt-2 text-white/75">Registrikood: {buyer.regCode || "-"}</p>
@@ -571,8 +572,8 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="overflow-x-auto py-9">
-            <table className="w-full min-w-[720px] border-collapse text-sm">
+          <div className="invoice-table-wrap overflow-x-auto py-9">
+            <table className="invoice-table w-full min-w-[720px] border-collapse text-sm">
               <thead>
                 <tr className="border-y border-line bg-paper text-xs uppercase text-ink/55">
                   <th className="p-4 text-left font-semibold">Kirjeldus</th>
@@ -604,7 +605,7 @@ export default function Home() {
           </div>
 
           <div className="flex justify-end">
-            <div className="w-full max-w-sm rounded-lg border border-line bg-paper p-5 text-sm">
+            <div className="invoice-summary w-full max-w-sm rounded-lg border border-line bg-paper p-5 text-sm">
               <div className="flex justify-between gap-4">
                 <span>Summa KM-ta</span>
                 <span>{eur(totals.net)}</span>
@@ -621,7 +622,7 @@ export default function Home() {
           </div>
 
           {note && (
-            <div className="mt-8 rounded-lg border border-line/80 bg-white p-4">
+            <div className="invoice-note mt-8 rounded-lg border border-line/80 bg-white p-4">
               <p className="text-xs font-semibold uppercase text-ink/45">Märkus</p>
               <p className="mt-2 whitespace-pre-line text-sm text-ink/65">{note}</p>
             </div>
