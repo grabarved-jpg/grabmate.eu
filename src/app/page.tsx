@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
-const VAT_RATE = 0.22;
+const VAT_RATE = 0.24;
 
 type Company = {
   name: string;
@@ -245,7 +245,7 @@ export default function Home() {
   const [date, setDate] = useState(todayIso());
   const [dueDate, setDueDate] = useState(addDaysToIso(todayIso(), 14));
   const [rows, setRows] = useState<InvoiceRow[]>(defaultRows);
-  const [note, setNote] = useState("Palume arve tasuda maksetähtajaks.");
+  const [note, setNote] = useState("Täname õigeaegselt tasutud arve eest.");
 
   const totals = useMemo(() => {
     return rows.reduce(
@@ -383,7 +383,7 @@ export default function Home() {
                       checked={row.vat}
                       onChange={(event) => updateRow(index, { vat: event.target.checked })}
                     />
-                    Lisa KM 22%
+                    Lisa KM 24%
                   </label>
                 </div>
               </div>
@@ -477,7 +477,7 @@ export default function Home() {
                 <span>{eur(totals.net)}</span>
               </div>
               <div className="mt-2 flex justify-between gap-4">
-                <span>KM 22%</span>
+                <span>KM 24%</span>
                 <span>{eur(totals.vat)}</span>
               </div>
               <div className="mt-4 flex justify-between gap-4 border-t border-line pt-4 text-2xl font-bold">

@@ -6,7 +6,7 @@ Lihtne Next.js arvegeneraator Eesti ettevõtetele. Rakendus ei kasuta andmebaasi
 
 - Arve koostaja ja arve saaja otsing Äriregistri autocomplete teenusest
 - Automaatne nime, registrikoodi ja aadressi täitmine
-- Arveread koguse, ühiku, hinna ja KM 22% valikuga
+- Arveread koguse, ühiku, hinna ja KM 24% valikuga
 - Arve eelvaade samal ekraanil
 - PDF salvestamine brauseri print dialoogi kaudu
 
