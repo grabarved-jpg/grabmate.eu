@@ -9,7 +9,9 @@ import {
   Search,
   Trash2
 } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const VAT_RATE = 0.24;
 
@@ -248,6 +250,7 @@ function CompanyAutocomplete({
 }
 
 export default function Home() {
+  const invoiceRef = useRef<HTMLElement>(null);
   const [seller, setSeller] = useState<Company>(emptyCompany);
   const [buyer, setBuyer] = useState<Company>(emptyCompany);
   const [invoiceNo, setInvoiceNo] = useState("2026-001");
@@ -255,6 +258,7 @@ export default function Home() {
   const [dueDate, setDueDate] = useState(addDaysToIso(todayIso(), 14));
   const [rows, setRows] = useState<InvoiceRow[]>(defaultRows);
   const [note, setNote] = useState("Täname õigeaegselt tasutud arve eest.");
+  const [exportingPdf, setExportingPdf] = useState(false);
 
   const totals = useMemo(() => {
     return rows.reduce(
@@ -296,6 +300,51 @@ export default function Home() {
   function updateInvoiceDate(nextDate: string) {
     setDate(nextDate);
     setDueDate(addDaysToIso(nextDate, 14));
+  }
+
+  async function savePdf() {
+    if (!invoiceRef.current || exportingPdf) {
+      return;
+    }
+
+    setExportingPdf(true);
+    document.body.classList.add("exporting-pdf");
+
+    try {
+      await new Promise((resolve) => window.requestAnimationFrame(resolve));
+
+      const canvas = await html2canvas(invoiceRef.current, {
+        backgroundColor: "#ffffff",
+        scale: 2,
+        useCORS: true
+      });
+
+      const pdf = new jsPDF("p", "mm", "a4");
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 10;
+      const imageWidth = pageWidth - margin * 2;
+      const imageHeight = (canvas.height * imageWidth) / canvas.width;
+      const imageData = canvas.toDataURL("image/png");
+
+      let position = margin;
+      let remainingHeight = imageHeight;
+
+      pdf.addImage(imageData, "PNG", margin, position, imageWidth, imageHeight);
+      remainingHeight -= pageHeight - margin * 2;
+
+      while (remainingHeight > 0) {
+        position = remainingHeight - imageHeight + margin;
+        pdf.addPage();
+        pdf.addImage(imageData, "PNG", margin, position, imageWidth, imageHeight);
+        remainingHeight -= pageHeight - margin * 2;
+      }
+
+      pdf.save(`arve-${invoiceNo || "uus"}.pdf`);
+    } finally {
+      document.body.classList.remove("exporting-pdf");
+      setExportingPdf(false);
+    }
   }
 
   return (
@@ -410,7 +459,11 @@ export default function Home() {
         </section>
       </aside>
 
-      <section id="invoice" className="overflow-hidden rounded-lg border border-line bg-white shadow-panel">
+      <section
+        id="invoice"
+        ref={invoiceRef}
+        className="overflow-hidden rounded-lg border border-line bg-white shadow-panel"
+      >
         <div className="h-2 bg-gradient-to-r from-mint via-ink to-coral" />
 
         <div className="p-6 md:p-10">
@@ -506,13 +559,14 @@ export default function Home() {
 
           <div className="no-print mt-8 flex justify-end">
             <button
-              className="inline-flex h-10 items-center gap-2 rounded-md bg-mint px-4 text-sm font-semibold text-white hover:bg-mint/90"
-              type="button"
-              onClick={() => window.print()}
-            >
-              <Download className="h-4 w-4" />
-              Salvesta PDF
-            </button>
+            className="inline-flex h-10 items-center gap-2 rounded-md bg-mint px-4 text-sm font-semibold text-white hover:bg-mint/90"
+            type="button"
+            disabled={exportingPdf}
+            onClick={savePdf}
+          >
+            <Download className="h-4 w-4" />
+            {exportingPdf ? "Salvestan..." : "Salvesta PDF"}
+          </button>
           </div>
         </div>
       </section>

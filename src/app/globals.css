@@ -27,6 +27,14 @@ select {
   font: inherit;
 }
 
+.exporting-pdf .no-print {
+  display: none !important;
+}
+
+.exporting-pdf #invoice {
+  box-shadow: none !important;
+}
+
 @media print {
   @page {
     margin: 14mm;
