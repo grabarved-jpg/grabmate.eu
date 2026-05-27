@@ -51,3 +51,14 @@ Soovitatav tee on Vercel:
 4. Deploy.
 5. Lisa Verceli `Settings -> Domains` all `grabmate.eu`.
 6. Lisa Zone DNS-i Verceli näidatud A või CNAME kirje.
+
+## E-posti saatmine
+
+PDF-i e-postiga saatmine kasutab Resendi API-t. Vercelis tuleb lisada projekti keskkonnamuutujad:
+
+```text
+RESEND_API_KEY=...
+INVOICE_FROM_EMAIL=Arvegeneraator <arved@grabmate.eu>
+```
+
+Saatja domeen peab Resendis kinnitatud olema.

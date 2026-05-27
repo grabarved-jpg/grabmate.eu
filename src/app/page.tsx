@@ -4,6 +4,7 @@ import {
   Building2,
   CalendarDays,
   Download,
+  Mail,
   Plus,
   Printer,
   Search,
@@ -20,6 +21,7 @@ type Company = {
   regCode: string;
   address: string;
   bankAccount?: string;
+  email?: string;
   status?: string;
 };
 
@@ -244,6 +246,15 @@ function CompanyAutocomplete({
             onChange={(next) => onChange({ ...value, bankAccount: next })}
           />
         )}
+        {title === "Arve saaja" && (
+          <Field
+            label="E-post"
+            value={value.email ?? ""}
+            placeholder="saaja@ettevote.ee"
+            type="email"
+            onChange={(next) => onChange({ ...value, email: next })}
+          />
+        )}
       </div>
     </section>
   );
@@ -259,6 +270,8 @@ export default function Home() {
   const [rows, setRows] = useState<InvoiceRow[]>(defaultRows);
   const [note, setNote] = useState("Täname õigeaegselt tasutud arve eest.");
   const [exportingPdf, setExportingPdf] = useState(false);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailStatus, setEmailStatus] = useState("");
 
   const totals = useMemo(() => {
     return rows.reduce(
@@ -302,12 +315,11 @@ export default function Home() {
     setDueDate(addDaysToIso(nextDate, 14));
   }
 
-  async function savePdf() {
-    if (!invoiceRef.current || exportingPdf) {
-      return;
+  async function buildPdf() {
+    if (!invoiceRef.current) {
+      throw new Error("Arve eelvaadet ei leitud.");
     }
 
-    setExportingPdf(true);
     document.body.classList.add("exporting-pdf");
 
     try {
@@ -340,10 +352,68 @@ export default function Home() {
         remainingHeight -= pageHeight - margin * 2;
       }
 
-      pdf.save(`arve-${invoiceNo || "uus"}.pdf`);
+      return pdf;
     } finally {
       document.body.classList.remove("exporting-pdf");
+    }
+  }
+
+  async function savePdf() {
+    if (exportingPdf) {
+      return;
+    }
+
+    setExportingPdf(true);
+
+    try {
+      const pdf = await buildPdf();
+      pdf.save(`arve-${invoiceNo || "uus"}.pdf`);
+    } finally {
       setExportingPdf(false);
+    }
+  }
+
+  async function sendInvoiceEmail() {
+    if (sendingEmail) {
+      return;
+    }
+
+    if (!buyer.email) {
+      setEmailStatus("Lisa arve saaja e-posti aadress.");
+      return;
+    }
+
+    setSendingEmail(true);
+    setEmailStatus("");
+
+    try {
+      const pdf = await buildPdf();
+      const pdfBase64 = pdf.output("datauristring").split(",")[1];
+      const response = await fetch("/api/send-invoice", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          to: buyer.email,
+          subject: `Arve ${invoiceNo}`,
+          message: `Tere\n\nManuses on arve ${invoiceNo}.\n\n${note}`,
+          filename: `arve-${invoiceNo || "uus"}.pdf`,
+          pdfBase64
+        })
+      });
+
+      const data = (await response.json()) as { error?: string };
+
+      if (!response.ok) {
+        throw new Error(data.error || "E-kirja saatmine ebaõnnestus.");
+      }
+
+      setEmailStatus("Arve saadeti e-postiga.");
+    } catch (error) {
+      setEmailStatus(error instanceof Error ? error.message : "E-kirja saatmine ebaõnnestus.");
+    } finally {
+      setSendingEmail(false);
     }
   }
 
@@ -557,8 +627,19 @@ export default function Home() {
             </div>
           )}
 
-          <div className="no-print mt-8 flex justify-end">
+        <div className="no-print mt-8 flex justify-end">
+          <div className="grid gap-2 sm:flex sm:items-center sm:justify-end">
+            {emailStatus && <p className="text-sm text-ink/65">{emailStatus}</p>}
             <button
+              className="inline-flex h-10 items-center gap-2 rounded-md border border-line bg-white px-4 text-sm font-semibold text-ink hover:bg-paper disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              disabled={sendingEmail}
+              onClick={sendInvoiceEmail}
+            >
+              <Mail className="h-4 w-4" />
+              {sendingEmail ? "Saadan..." : "Saada e-postiga"}
+            </button>
+          <button
             className="inline-flex h-10 items-center gap-2 rounded-md bg-mint px-4 text-sm font-semibold text-white hover:bg-mint/90"
             type="button"
             disabled={exportingPdf}
@@ -568,6 +649,7 @@ export default function Home() {
             {exportingPdf ? "Salvestan..." : "Salvesta PDF"}
           </button>
           </div>
+        </div>
         </div>
       </section>
     </main>
